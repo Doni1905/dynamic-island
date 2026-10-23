@@ -88,7 +88,17 @@ struct CompactIslandView: View {
             }
             Spacer(minLength: 0)
         }
-        .frame(height: IslandMetrics.compactIdle.height)
+        .frame(height: state.compactPillHeight)
+    }
+
+    private var musicPillWidth: CGFloat {
+        state.hasNotch ? state.notchWidth + 2 * 68 : IslandMetrics.compactMusic.width
+    }
+    private var timerPillWidth: CGFloat {
+        state.hasNotch ? state.notchWidth + 2 * 58 : IslandMetrics.compactTimer.width
+    }
+    private var idlePillWidth: CGFloat {
+        state.hasNotch ? state.notchWidth : IslandMetrics.compactIdle.width
     }
 
     @ViewBuilder
@@ -101,7 +111,7 @@ struct CompactIslandView: View {
                     LiveWaveform(playing: music.isPlaying)
                 }
                 .padding(.horizontal, 7)
-                .frame(width: IslandMetrics.compactMusic.width, height: 36)
+                .frame(width: musicPillWidth, height: state.compactPillHeight)
                 .background(Color.black)
                 .clipShape(Capsule())
             }
@@ -118,7 +128,7 @@ struct CompactIslandView: View {
                         .foregroundColor(.orange)
                 }
                 .padding(.horizontal, 12)
-                .frame(width: IslandMetrics.compactTimer.width, height: 36)
+                .frame(width: timerPillWidth, height: state.compactPillHeight)
                 .background(Color.black)
                 .clipShape(Capsule())
             }
@@ -126,7 +136,7 @@ struct CompactIslandView: View {
         } else {
             Button { state.expand(.timer) } label: {
                 Color.black
-                    .frame(width: IslandMetrics.compactIdle.width, height: 36)
+                    .frame(width: idlePillWidth, height: state.compactPillHeight)
                     .clipShape(Capsule())
             }
             .buttonStyle(.plain)

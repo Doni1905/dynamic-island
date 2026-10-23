@@ -37,6 +37,14 @@ struct IslandMetrics {
 final class IslandState: ObservableObject {
     @Published var mode: IslandMode = .compact
 
+    /// Hardware notch geometry of the screen the island sits on (0 = no notch).
+    /// Set by the window controller from NSScreen's auxiliary top areas.
+    var notchWidth: CGFloat = 0
+    var notchHeight: CGFloat = 0
+
+    var hasNotch: Bool { notchWidth > 0 }
+    var compactPillHeight: CGFloat { hasNotch ? max(36, notchHeight) : 36 }
+
     let music = MusicMonitor()
     let timer = TimerManager()
 
@@ -66,6 +74,14 @@ final class IslandState: ObservableObject {
     var currentSize: CGSize {
         switch mode {
         case .compact:
+            if hasNotch {
+                // The pill spans the physical notch so the cutout disappears
+                // into the black, with content flanking it - the iPhone trick.
+                let side: CGFloat = music.active ? 68 : (timer.isLive ? 58 : 0)
+                var width = notchWidth + 2 * side
+                if music.active && timer.isLive { width += 80 } // timer bubble
+                return CGSize(width: width, height: compactPillHeight)
+            }
             if music.active && timer.isLive { return IslandMetrics.compactBoth }
             if music.active { return IslandMetrics.compactMusic }
             if timer.isLive { return IslandMetrics.compactTimer }

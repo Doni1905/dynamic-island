@@ -34,6 +34,7 @@ final class IslandWindowController: NSWindowController {
 
         super.init(window: panel)
 
+        detectNotch()
         state.onResize = { [weak self] size in
             self?.resize(to: size, animated: !(self?.state.reduceMotion ?? false))
         }
@@ -51,8 +52,26 @@ final class IslandWindowController: NSWindowController {
             queue: .main
         ) { [weak self] _ in
             guard let self = self else { return }
+            self.detectNotch()
             self.resize(to: self.state.currentSize, animated: false)
         }
+    }
+
+    /// Reads the screen's auxiliary top areas (macOS 12+) to find the
+    /// physical notch size, so the compact pill can wrap it exactly.
+    private func detectNotch() {
+        guard let screen = window?.screen ?? NSScreen.main else { return }
+        if let left = screen.auxiliaryTopLeftArea, let right = screen.auxiliaryTopRightArea {
+            let width = right.minX - left.maxX
+            let height = screen.frame.maxY - left.minY
+            if width > 0 {
+                state.notchWidth = width
+                state.notchHeight = height
+                return
+            }
+        }
+        state.notchWidth = 0
+        state.notchHeight = 0
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) is not used") }
